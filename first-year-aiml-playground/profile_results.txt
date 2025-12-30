@@ -1,0 +1,16 @@
+         8161 function calls (7575 primitive calls) in 0.015 seconds
+
+   Ordered by: cumulative time
+   List reduced from 737 to 10 due to restriction <10>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.015    0.015 /app/first-year-aiml-playground/profile_app.py:14(profile_app)
+        1    0.000    0.000    0.005    0.005 /app/first-year-aiml-playground/app/model_utils.py:4(load_data)
+        1    0.000    0.000    0.004    0.004 /home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/sklearn/utils/_param_validation.py:187(wrapper)
+        1    0.000    0.000    0.004    0.004 /home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/pandas/io/parsers/readers.py:868(read_csv)
+        1    0.000    0.000    0.004    0.004 /home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/pandas/io/parsers/readers.py:583(_read)
+        1    0.000    0.000    0.004    0.004 /home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/sklearn/base.py:1319(wrapper)
+        1    0.000    0.000    0.004    0.004 /home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/sklearn/model_selection/_split.py:2757(train_test_split)
+        1    0.000    0.000    0.004    0.004 /home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/sklearn/neighbors/_classification.py:221(fit)
+        1    0.000    0.000    0.004    0.004 /home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/sklearn/neighbors/_base.py:467(_fit)
+        7    0.000    0.000    0.003    0.000 /home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/sklearn/utils/validation.py:725(check_array)
