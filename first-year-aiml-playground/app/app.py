@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-from sklearn.neighbors import KNeighborsClassifier
-from model_utils import load_data
+from model_utils import load_data, train_model
 
 st.set_page_config(page_title="Iris Classifier", page_icon="🌸", layout="centered")
 st.title("🌸 Iris Classifier (Beginner AIML App)")
@@ -21,8 +20,8 @@ X = df.drop("species", axis=1)
 y = df["species"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42, stratify=y)
-model = KNeighborsClassifier(n_neighbors=k)
-model.fit(X_train, y_train)
+
+model = train_model(X_train, y_train, k)
 preds = model.predict(X_test)
 acc = accuracy_score(y_test, preds)
 
