@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+*.pstats
+profile_results.txt
