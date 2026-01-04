@@ -10,35 +10,45 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from app.model_utils import load_data, train_model
 
-def profile_app_with_caching():
-    """
-    Profiles the data loading and model training of the Iris app,
-    running the functions multiple times to show the effect of caching.
-    """
-    # Initial calls to cache the results
+def run_data_and_model_funcs():
+    """Helper function to run the core logic."""
     df = load_data()
     X = df.drop("species", axis=1)
     y = df["species"]
     X_train, _, y_train, _ = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
     train_model(X_train, y_train, k=5)
 
-    # Second calls to measure performance with cache
-    df_cached = load_data()
-    X_cached = df_cached.drop("species", axis=1)
-    y_cached = df_cached["species"]
-    X_train_cached, _, y_train_cached, _ = train_test_split(X_cached, y_cached, test_size=0.2, random_state=42, stratify=y)
-    train_model(X_train_cached, y_train_cached, k=5)
-
-
 if __name__ == "__main__":
-    profiler = cProfile.Profile()
-    profiler.enable()
-    profile_app_with_caching()
-    profiler.disable()
+    # --- Profile the initial (uncached) run ---
+    print("Profiling UNCACHED function calls...")
+    profiler_uncached = cProfile.Profile()
+    profiler_uncached.enable()
 
-    output_file = os.path.join(os.path.dirname(__file__), 'profile_results.txt')
-    with open(output_file, 'w') as f:
-        stats = pstats.Stats(profiler, stream=f).sort_stats("cumtime")
-        stats.print_stats()
+    run_data_and_model_funcs()
 
-    print(f"Profiling results saved to {output_file}")
+    profiler_uncached.disable()
+
+    output_file_uncached = os.path.join(os.path.dirname(__file__), 'profile_results_uncached.txt')
+    pstats.Stats(profiler_uncached).dump_stats('profile_results_uncached.pstats')
+    with open(output_file_uncached, 'w') as f:
+        stats_uncached = pstats.Stats(profiler_uncached, stream=f).sort_stats("cumtime")
+        stats_uncached.print_stats()
+    print(f"Uncached profiling results saved to {output_file_uncached}")
+
+    print("-" * 50)
+
+    # --- Profile the second (cached) run ---
+    print("Profiling CACHED function calls...")
+    profiler_cached = cProfile.Profile()
+    profiler_cached.enable()
+
+    run_data_and_model_funcs()
+
+    profiler_cached.disable()
+
+    output_file_cached = os.path.join(os.path.dirname(__file__), 'profile_results_cached.txt')
+    pstats.Stats(profiler_cached).dump_stats('profile_results_cached.pstats')
+    with open(output_file_cached, 'w') as f:
+        stats_cached = pstats.Stats(profiler_cached, stream=f).sort_stats("cumtime")
+        stats_cached.print_stats()
+    print(f"Cached profiling results saved to {output_file_cached}")
