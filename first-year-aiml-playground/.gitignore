@@ -1,6 +1,8 @@
+# Python cache
 __pycache__/
 *.pyc
 *.pstats
-profile_results.txt
-profile_results_cached.txt
-profile_results_uncached.txt
+
+# Test & benchmark artifacts
+.pytest_cache/
+.benchmarks/
