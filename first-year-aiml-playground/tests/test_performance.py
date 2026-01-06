@@ -1,6 +1,8 @@
 import pytest
+import numpy as np
 from sklearn.model_selection import train_test_split
 from app.model_utils import load_data, train_model
+from scratch_ml.linear_regression import LinearRegressionGD
 
 @pytest.fixture(scope="module")
 def app_data():
@@ -18,3 +20,18 @@ def test_train_model_performance(benchmark, app_data):
     """Benchmark the train_model function."""
     X_train, _, y_train, _ = app_data
     benchmark(train_model, X_train, y_train, k=5)
+
+@pytest.fixture(scope="module")
+def linear_regression_data():
+    """Fixture to generate a large dataset for performance tests."""
+    rng = np.random.default_rng(42)
+    num_samples = 10000
+    X = rng.uniform(-10, 10, size=(num_samples, 3))
+    y = 2 * X[:, 0] + 3 * X[:, 1] - 5 * X[:, 2] + 7 + rng.normal(0, 0.5, size=num_samples)
+    return X, y
+
+def test_linear_regression_performance(benchmark, linear_regression_data):
+    """Benchmark the LinearRegressionGD model."""
+    X, y = linear_regression_data
+    model = LinearRegressionGD(lr=0.01, epochs=1000)
+    benchmark(model.fit, X, y)
