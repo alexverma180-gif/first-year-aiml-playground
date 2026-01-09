@@ -35,3 +35,15 @@ def test_linear_regression_performance(benchmark, linear_regression_data):
     X, y = linear_regression_data
     model = LinearRegressionGD(lr=0.01, epochs=1000)
     benchmark(model.fit, X, y)
+
+@pytest.fixture(scope="module")
+def trained_model(app_data):
+    """Fixture to train the model once for all prediction tests."""
+    X_train, _, y_train, _ = app_data
+    return train_model(X_train, y_train, k=5)
+
+
+def test_predict_model_performance(benchmark, trained_model, app_data):
+    """Benchmark the model's predict method."""
+    _, X_test, _, _ = app_data
+    benchmark(trained_model.predict, X_test)
