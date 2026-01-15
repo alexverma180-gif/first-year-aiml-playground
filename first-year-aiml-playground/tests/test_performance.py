@@ -24,6 +24,12 @@ def test_train_model_performance(benchmark, app_data):
     # Use the __wrapped__ attribute to bypass the Streamlit caching decorator
     benchmark(train_model.__wrapped__, X_train, y_train, k=5)
 
+def test_predict_model_performance(benchmark, app_data):
+    """Benchmark the model's prediction speed."""
+    X_train, X_test, y_train, _ = app_data
+    model = train_model.__wrapped__(X_train, y_train, k=5)
+    benchmark(model.predict, X_test)
+
 @pytest.fixture(scope="module")
 def linear_regression_data():
     """Fixture to generate a large dataset for performance tests."""
