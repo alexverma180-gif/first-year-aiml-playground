@@ -38,3 +38,15 @@ def test_linear_regression_performance(benchmark, linear_regression_data):
     X, y = linear_regression_data
     model = LinearRegressionGD(lr=0.01, epochs=1000)
     benchmark(model.fit, X, y)
+
+@pytest.fixture(scope="module")
+def trained_model(app_data):
+    """Fixture to train a model once for all prediction tests."""
+    X_train, _, y_train, _ = app_data
+    # Use the __wrapped__ attribute to bypass the Streamlit caching decorator
+    return train_model.__wrapped__(X_train, y_train, k=5)
+
+def test_predict_model_performance(benchmark, trained_model, app_data):
+    """Benchmark the predict method of the trained model."""
+    _, X_test, _, _ = app_data
+    benchmark(trained_model.predict, X_test)
