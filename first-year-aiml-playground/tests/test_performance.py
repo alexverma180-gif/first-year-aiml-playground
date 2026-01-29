@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 from app.model_utils import load_data, train_model
 from scratch_ml.linear_regression import LinearRegressionGD
 
@@ -11,16 +12,27 @@ def app_data():
     df = load_data.__wrapped__()
     X = df.drop("species", axis=1)
     y = df["species"]
-    return train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    return X, y
 
 def test_load_data_performance(benchmark):
     """Benchmark the load_data function."""
     # Use the __wrapped__ attribute to bypass the Streamlit caching decorator
     benchmark(load_data.__wrapped__)
 
-def test_train_model_performance(benchmark, app_data):
+def test_train_test_split_performance(benchmark, app_data):
+    """Benchmark the train_test_split function."""
+    X, y = app_data
+    benchmark(train_test_split, X, y, test_size=0.2, random_state=42, stratify=y)
+
+@pytest.fixture(scope="module")
+def split_app_data(app_data):
+    """Fixture to split the application data."""
+    X, y = app_data
+    return train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+def test_train_model_performance(benchmark, split_app_data):
     """Benchmark the train_model function."""
-    X_train, _, y_train, _ = app_data
+    X_train, _, y_train, _ = split_app_data
     # Use the __wrapped__ attribute to bypass the Streamlit caching decorator
     benchmark.pedantic(train_model.__wrapped__, args=(X_train, y_train), kwargs={"k": 5}, rounds=10)
 
@@ -56,13 +68,25 @@ def test_linear_regression_predict_performance(benchmark, trained_linear_regress
 
 
 @pytest.fixture(scope="module")
-def trained_model(app_data):
+def trained_model(split_app_data):
     """Fixture to train a model once for all prediction tests."""
-    X_train, _, y_train, _ = app_data
+    X_train, _, y_train, _ = split_app_data
     # Use the __wrapped__ attribute to bypass the Streamlit caching decorator
     return train_model.__wrapped__(X_train, y_train, k=5)
 
-def test_predict_model_performance(benchmark, trained_model, app_data):
+def test_predict_model_performance(benchmark, trained_model, split_app_data):
     """Benchmark the predict method of the trained model."""
-    _, X_test, _, _ = app_data
+    _, X_test, _, _ = split_app_data
     benchmark.pedantic(trained_model.predict, args=(X_test,), rounds=10)
+
+@pytest.fixture(scope="module")
+def predictions(trained_model, split_app_data):
+    """Fixture to generate predictions once for all accuracy tests."""
+    _, X_test, _, y_test = split_app_data
+    preds = trained_model.predict(X_test)
+    return y_test, preds
+
+def test_accuracy_score_performance(benchmark, predictions):
+    """Benchmark the accuracy_score function."""
+    y_test, preds = predictions
+    benchmark(accuracy_score, y_test, preds)
