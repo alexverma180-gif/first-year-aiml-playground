@@ -14,10 +14,11 @@ class LinearRegressionGD:
         self.w = np.zeros(d)
         self.b = 0.0
 
+        two_over_n = 2.0 / n
         for _ in range(self.epochs):
-            y_pred = X @ self.w + self.b
-            dw = (2/n) * X.T @ (y_pred - y)
-            db = (2/n) * np.sum(y_pred - y)
+            diff = (X @ self.w + self.b) - y
+            dw = two_over_n * (X.T @ diff)
+            db = two_over_n * np.sum(diff)
             self.w -= self.lr * dw
             self.b -= self.lr * db
         return self
