@@ -14,12 +14,15 @@ class LinearRegressionGD:
         self.w = np.zeros(d)
         self.b = 0.0
 
+        two_over_n = 2.0 / n
+        learning_rate_factor = self.lr * two_over_n
+
         for _ in range(self.epochs):
-            y_pred = X @ self.w + self.b
-            dw = (2/n) * X.T @ (y_pred - y)
-            db = (2/n) * np.sum(y_pred - y)
-            self.w -= self.lr * dw
-            self.b -= self.lr * db
+            error = (X @ self.w + self.b) - y
+            dw = learning_rate_factor * (X.T @ error)
+            db = learning_rate_factor * np.sum(error)
+            self.w -= dw
+            self.b -= db
         return self
 
     def predict(self, X):
