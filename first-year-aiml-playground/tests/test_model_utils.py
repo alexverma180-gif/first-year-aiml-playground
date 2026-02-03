@@ -22,7 +22,7 @@ def test_train_model():
     df = load_data()
     X = df.drop("species", axis=1)
     y = df["species"]
-    X_train, _, y_train, _ = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, _, y_train, _ = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
     model = train_model(X_train, y_train, k=5)
     assert isinstance(model, KNeighborsClassifier)
