@@ -18,11 +18,11 @@ class LinearRegressionGD:
         learning_rate_factor = self.lr * two_over_n
 
         for _ in range(self.epochs):
-            error = (X @ self.w + self.b) - y
-            dw = learning_rate_factor * (X.T @ error)
-            db = learning_rate_factor * np.sum(error)
-            self.w -= dw
-            self.b -= db
+            error = X @ self.w
+            error += self.b
+            error -= y
+            self.w -= learning_rate_factor * (X.T @ error)
+            self.b -= learning_rate_factor * error.sum()
         return self
 
     def predict(self, X):
