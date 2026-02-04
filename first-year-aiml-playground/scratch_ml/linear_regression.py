@@ -17,12 +17,25 @@ class LinearRegressionGD:
         two_over_n = 2.0 / n
         learning_rate_factor = self.lr * two_over_n
 
+        # Precompute constants to reduce complexity from O(n*d) to O(d^2) per iteration
+        XtX = X.T @ X
+        Xty = X.T @ y
+        col_sums = X.sum(axis=0)
+        sum_y = y.sum()
+
         for _ in range(self.epochs):
-            error = X @ self.w
-            error += self.b
-            error -= y
-            self.w -= learning_rate_factor * (X.T @ error)
-            self.b -= learning_rate_factor * error.sum()
+            # Gradient wrt w: (2/n) * (XtX @ w + b * col_sums - Xty)
+            # Gradient wrt b: (2/n) * (col_sums @ w + n * b - sum_y)
+            grad_w = XtX @ self.w
+            grad_w += self.b * col_sums
+            grad_w -= Xty
+
+            grad_b = col_sums @ self.w
+            grad_b += n * self.b
+            grad_b -= sum_y
+
+            self.w -= learning_rate_factor * grad_w
+            self.b -= learning_rate_factor * grad_b
         return self
 
     def predict(self, X):
