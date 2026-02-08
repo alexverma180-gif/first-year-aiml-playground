@@ -26,15 +26,24 @@ class LinearRegressionGD:
         two_over_n = 2.0 / n
         learning_rate_factor = self.lr * two_over_n
 
-        for _ in range(self.epochs):
-            # Analytical gradient calculation using precomputed terms:
-            # Grad w = (2/n) * (X.T @ (X @ w + b - y)) = (2/n) * (XTX @ w + b * X_sum - XTy)
-            # Grad b = (2/n) * sum(X @ w + b - y) = (2/n) * (X_sum @ w + n * b - y_sum)
-            grad_w = XTX @ self.w + self.b * X_sum - XTy
-            grad_b = X_sum @ self.w + n * self.b - y_sum
+        # Further optimize by pre-scaling terms by the learning rate factor outside the loop.
+        # This reduces the number of scalar-vector multiplications inside the loop.
+        XTX_scaled = learning_rate_factor * XTX
+        XTy_scaled = learning_rate_factor * XTy
+        X_sum_scaled = learning_rate_factor * X_sum
+        y_sum_scaled = learning_rate_factor * y_sum
+        # For the bias update, we also pre-scale the 'n' and 'b' terms
+        n_scaled = learning_rate_factor * n
 
-            self.w -= learning_rate_factor * grad_w
-            self.b -= learning_rate_factor * grad_b
+        for _ in range(self.epochs):
+            # Analytical gradient calculation with pre-scaled terms:
+            # Grad w * factor = (learning_rate_factor * XTX) @ w + b * (learning_rate_factor * X_sum) - (learning_rate_factor * XTy)
+            # Grad b * factor = (learning_rate_factor * X_sum) @ w + b * (learning_rate_factor * n) - (learning_rate_factor * y_sum)
+            step_w = XTX_scaled @ self.w + self.b * X_sum_scaled - XTy_scaled
+            step_b = X_sum_scaled @ self.w + n_scaled * self.b - y_sum_scaled
+
+            self.w -= step_w
+            self.b -= step_b
         return self
 
     def predict(self, X):
