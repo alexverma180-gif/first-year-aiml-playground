@@ -1,0 +1,15 @@
+LinearRegressionGD.fit Scaling Analysis (epochs=1000):
+
+| D  | N      | Median Time (ms) |
+|----|--------|------------------|
+| 10 | 1,000  | 7.49             |
+| 10 | 10,000 | 7.88             |
+| 50 | 1,000  | 8.07             |
+| 50 | 10,000 | 9.66             |
+
+Analysis:
+- Increasing N by 10x for D=10 only results in a ~5% increase in total time.
+- Increasing N by 10x for D=50 results in a ~20% increase in total time.
+- This confirms that the training time is dominated by the O(epochs * D^2) loop, and the O(N * D^2) precomputation is very efficient.
+- A naive implementation would scale O(epochs * N * D), making it 10x slower for N=10,000 compared to N=1,000.
+- The optimized implementation successfully decouples the main loop from N.
