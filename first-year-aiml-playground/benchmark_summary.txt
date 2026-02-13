@@ -18,25 +18,32 @@ The implementation uses analytical gradients to reduce per-iteration complexity 
 
 ### Baseline Performance (N=10000, D=3, 1000 epochs)
 - **Training (fit)**: ~7.4 ms
-- **Prediction**: ~97 us
+- **Prediction**: ~36 us
+
+### Naive vs Optimized Comparison (N=10000, D=20, 100 epochs)
+| Implementation | Mean Time | Speedup |
+|---|---|---|
+| Naive ($O(ND)$ per iter) | ~20.5 ms | 1.0x |
+| Optimized ($O(D^2)$ per iter) | ~1.6 ms | ~12.8x |
 
 ### Scaling with Number of Samples (N) [D=10, 100 epochs]
 | N | Mean Time |
 |---|---|
-| 1,000 | 876 us |
-| 10,000 | 1.35 ms |
-| 100,000 | 6.17 ms |
+| 1,000 | ~845 us |
+| 10,000 | ~1.3 ms |
+| 100,000 | ~6.2 ms |
 *Observation: Training time increases with N primarily due to the initial O(N*D^2) precomputation of XTX and XTy. The per-iteration cost remains constant.*
 
 ### Scaling with Number of Features (D) [N=10000, 100 epochs]
 | D | Mean Time |
 |---|---|
-| 5 | 1.11 ms |
-| 50 | 2.41 ms |
-| 500 | 43.39 ms |
+| 5 | ~1.1 ms |
+| 50 | ~2.5 ms |
+| 500 | ~47 ms |
 *Observation: Performance scales quadratically with D, matching the O(D^2) complexity of matrix-vector multiplications in the training loop.*
 
 ## Conclusions
 - The scikit-learn components for the Iris app are highly efficient.
-- The custom `LinearRegressionGD` is optimized for large N by precomputing necessary matrices, making it suitable for datasets where the number of samples significantly exceeds the number of features.
-- Precomputation dominates for very large datasets, but NumPy's optimized BLAS routines keep this efficient up to D=500.
+- The custom `LinearRegressionGD` is optimized for large N by precomputing necessary matrices, achieving significant speedup (up to 13x for D=20) compared to a naive implementation.
+- The optimization makes the training time primarily dependent on $D^2$ and the number of epochs, rather than the dataset size $N$ (after initial precomputation).
+- The implementation is robust and scales well up to at least $D=500$ and $N=100,000$.
