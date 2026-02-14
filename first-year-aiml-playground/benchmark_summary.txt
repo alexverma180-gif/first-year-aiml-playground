@@ -9,34 +9,44 @@
 ## Core Application Functions (Iris Dataset)
 | Function | Mean Time | Description |
 |---|---|---|
-| `load_data` | ~1.5 ms | Loading and cleaning Iris dataset |
-| `train_model` (KNN) | ~1.8 ms | Training scikit-learn KNN (k=5) |
-| `predict_model` | ~2.6 ms | Prediction on test set |
+| `load_data` | ~1.4 ms | Loading and cleaning Iris dataset |
+| `train_model` (KNN) | ~1.7 ms | Training scikit-learn KNN (k=5) |
+| `predict_model` | ~2.4 ms | Prediction on test set |
 
 ## Linear Regression GD (Custom Implementation)
 The implementation uses analytical gradients to reduce per-iteration complexity from O(N*D) to O(D^2).
 
 ### Baseline Performance (N=10000, D=3, 1000 epochs)
-- **Training (fit)**: ~7.4 ms
-- **Prediction**: ~97 us
+- **Training (fit)**: ~6.7 ms
+- **Prediction**: ~102 us
+
+### Implementation Comparison (N=10000, D=20, 100 epochs)
+| Implementation | Mean Time | Speedup (vs Naive) | Complexity |
+|---|---|---|---|
+| Naive | ~19.2 ms | 1x | O(N*D) / iter |
+| Optimized (Current) | ~1.50 ms | ~12.8x | O(D^2) / iter |
+| Augmented Matrix | ~1.23 ms | ~15.6x | O(D^2) / iter |
+
+*Note: The Augmented Matrix approach combines weights and bias into a single vector, further reducing Python loop overhead.*
 
 ### Scaling with Number of Samples (N) [D=10, 100 epochs]
 | N | Mean Time |
 |---|---|
-| 1,000 | 876 us |
-| 10,000 | 1.35 ms |
-| 100,000 | 6.17 ms |
+| 1,000 | 904 us |
+| 10,000 | 1.39 ms |
+| 100,000 | 6.01 ms |
 *Observation: Training time increases with N primarily due to the initial O(N*D^2) precomputation of XTX and XTy. The per-iteration cost remains constant.*
 
 ### Scaling with Number of Features (D) [N=10000, 100 epochs]
 | D | Mean Time |
 |---|---|
-| 5 | 1.11 ms |
-| 50 | 2.41 ms |
-| 500 | 43.39 ms |
+| 5 | 1.32 ms |
+| 50 | 2.81 ms |
+| 500 | 47.33 ms |
 *Observation: Performance scales quadratically with D, matching the O(D^2) complexity of matrix-vector multiplications in the training loop.*
 
 ## Conclusions
 - The scikit-learn components for the Iris app are highly efficient.
-- The custom `LinearRegressionGD` is optimized for large N by precomputing necessary matrices, making it suitable for datasets where the number of samples significantly exceeds the number of features.
+- The custom `LinearRegressionGD` is optimized for large N by precomputing necessary matrices, achieving >12x speedup over a naive implementation at N=10000.
+- An "Augmented Matrix" implementation provides an additional ~20% performance gain over the current optimized version by reducing the number of NumPy calls within the training loop.
 - Precomputation dominates for very large datasets, but NumPy's optimized BLAS routines keep this efficient up to D=500.
