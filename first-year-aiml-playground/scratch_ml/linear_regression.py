@@ -11,39 +11,42 @@ class LinearRegressionGD:
         X = np.asarray(X, dtype=float)
         y = np.asarray(y, dtype=float)
         n, d = X.shape
-        self.w = np.zeros(d)
-        self.b = 0.0
 
         # Precompute values for analytical gradient to reduce complexity per iteration from O(N*D) to O(D^2).
-        # This optimization is highly effective when N >> D and the number of epochs is large.
-        # Note: Precomputing XTX has an initial cost of O(N*D^2) and requires O(D^2) additional space.
-        # For very high-dimensional data (large D), this might lead to increased memory usage.
+        # We use an "Augmented Matrix" approach to combine weight and bias updates into a single operation.
+        # Instead of explicitly creating an augmented X matrix (which copies data), we construct
+        # the augmented covariance matrices from precomputed terms to save memory and time.
         XTX = X.T @ X
         XTy = X.T @ y
         X_sum = X.sum(axis=0)
         y_sum = y.sum()
 
-        two_over_n = 2.0 / n
-        learning_rate_factor = self.lr * two_over_n
+        # Construct augmented XTX_aug = [[XTX, X_sum], [X_sum.T, n]]
+        XTX_aug = np.empty((d + 1, d + 1))
+        XTX_aug[:d, :d] = XTX
+        XTX_aug[:d, d] = X_sum
+        XTX_aug[d, :d] = X_sum
+        XTX_aug[d, d] = n
 
-        # Further optimize by pre-scaling terms by the learning rate factor outside the loop.
-        # This reduces the number of scalar-vector multiplications inside the loop.
-        XTX_scaled = learning_rate_factor * XTX
-        XTy_scaled = learning_rate_factor * XTy
-        X_sum_scaled = learning_rate_factor * X_sum
-        y_sum_scaled = learning_rate_factor * y_sum
-        # For the bias update, we also pre-scale the 'n' and 'b' terms
-        n_scaled = learning_rate_factor * n
+        # Construct augmented XTy_aug = [XTy, y_sum]
+        XTy_aug = np.empty(d + 1)
+        XTy_aug[:d] = XTy
+        XTy_aug[d] = y_sum
 
+        # Pre-scale terms by the learning rate factor outside the loop to minimize operations inside.
+        learning_rate_factor = self.lr * (2.0 / n)
+        XTX_scaled = learning_rate_factor * XTX_aug
+        XTy_scaled = learning_rate_factor * XTy_aug
+
+        theta = np.zeros(d + 1)
         for _ in range(self.epochs):
-            # Analytical gradient calculation with pre-scaled terms:
-            # Grad w * factor = (learning_rate_factor * XTX) @ w + b * (learning_rate_factor * X_sum) - (learning_rate_factor * XTy)
-            # Grad b * factor = (learning_rate_factor * X_sum) @ w + b * (learning_rate_factor * n) - (learning_rate_factor * y_sum)
-            step_w = XTX_scaled @ self.w + self.b * X_sum_scaled - XTy_scaled
-            step_b = X_sum_scaled @ self.w + n_scaled * self.b - y_sum_scaled
+            # Combined analytical gradient calculation:
+            # theta = theta - factor * (XTX_aug @ theta - XTy_aug)
+            # theta = theta - (XTX_scaled @ theta - XTy_scaled)
+            theta -= (XTX_scaled @ theta - XTy_scaled)
 
-            self.w -= step_w
-            self.b -= step_b
+        self.w = theta[:d]
+        self.b = theta[d]
         return self
 
     def predict(self, X):
