@@ -26,24 +26,37 @@ class LinearRegressionGD:
         two_over_n = 2.0 / n
         learning_rate_factor = self.lr * two_over_n
 
-        # Further optimize by pre-scaling terms by the learning rate factor outside the loop.
-        # This reduces the number of scalar-vector multiplications inside the loop.
-        XTX_scaled = learning_rate_factor * XTX
-        XTy_scaled = learning_rate_factor * XTy
-        X_sum_scaled = learning_rate_factor * X_sum
-        y_sum_scaled = learning_rate_factor * y_sum
-        # For the bias update, we also pre-scale the 'n' and 'b' terms
-        n_scaled = learning_rate_factor * n
+        # Use an Augmented Matrix approach to combine w and b into a single weight vector.
+        # This reduces the training loop to a single matrix-vector multiplication,
+        # further minimizing Python loop overhead and better utilizing BLAS.
+        # Augmented covariance matrix: [[XTX, X_sum], [X_sum.T, n]]
+        M = np.empty((d + 1, d + 1))
+        M[:d, :d] = XTX
+        M[:d, d] = X_sum
+        M[d, :d] = X_sum
+        M[d, d] = n
+
+        # Augmented XTy vector: [XTy, y_sum]
+        V = np.empty(d + 1)
+        V[:d] = XTy
+        V[d] = y_sum
+
+        # Pre-scale by learning rate factor
+        M_scaled = learning_rate_factor * M
+        V_scaled = learning_rate_factor * V
+
+        # Augmented weight vector [w_1, ..., w_d, b]
+        W = np.zeros(d + 1)
+        # Initialize from existing self.w and self.b (already set to zeros at start of fit)
+        W[:d] = self.w
+        W[d] = self.b
 
         for _ in range(self.epochs):
-            # Analytical gradient calculation with pre-scaled terms:
-            # Grad w * factor = (learning_rate_factor * XTX) @ w + b * (learning_rate_factor * X_sum) - (learning_rate_factor * XTy)
-            # Grad b * factor = (learning_rate_factor * X_sum) @ w + b * (learning_rate_factor * n) - (learning_rate_factor * y_sum)
-            step_w = XTX_scaled @ self.w + self.b * X_sum_scaled - XTy_scaled
-            step_b = X_sum_scaled @ self.w + n_scaled * self.b - y_sum_scaled
+            # Combined gradient step: W = W - (M_scaled @ W - V_scaled)
+            W -= (M_scaled @ W - V_scaled)
 
-            self.w -= step_w
-            self.b -= step_b
+        self.w = W[:d]
+        self.b = float(W[d])
         return self
 
     def predict(self, X):
