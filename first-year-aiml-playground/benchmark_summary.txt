@@ -17,23 +17,23 @@
 The implementation uses analytical gradients to reduce per-iteration complexity from O(N*D) to O(D^2).
 
 ### Baseline Performance (N=10000, D=3, 1000 epochs)
-- **Training (fit)**: ~7.4 ms
-- **Prediction**: ~97 us
+- **Training (fit)**: ~8.5 ms
+- **Prediction**: ~98 us
 
 ### Scaling with Number of Samples (N) [D=10, 100 epochs]
 | N | Mean Time |
 |---|---|
-| 1,000 | 876 us |
-| 10,000 | 1.35 ms |
-| 100,000 | 6.17 ms |
+| 1,000 | 880 us |
+| 10,000 | 1.32 ms |
+| 100,000 | 5.76 ms |
 *Observation: Training time increases with N primarily due to the initial O(N*D^2) precomputation of XTX and XTy. The per-iteration cost remains constant.*
 
 ### Scaling with Number of Features (D) [N=10000, 100 epochs]
 | D | Mean Time |
 |---|---|
-| 5 | 1.11 ms |
-| 50 | 2.41 ms |
-| 500 | 43.39 ms |
+| 5 | 1.13 ms |
+| 50 | 2.73 ms |
+| 500 | 46.3 ms |
 *Observation: Performance scales quadratically with D, matching the O(D^2) complexity of matrix-vector multiplications in the training loop.*
 
 ## Conclusions
