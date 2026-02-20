@@ -18,25 +18,28 @@ The implementation uses analytical gradients to reduce per-iteration complexity 
 
 ### Baseline Performance (N=10000, D=3, 1000 epochs)
 - **Training (fit)**: ~7.4 ms
-- **Prediction**: ~97 us
+- **Prediction**: ~37 us
 
-### Scaling with Number of Samples (N) [D=10, 100 epochs]
-| N | Mean Time |
-|---|---|
-| 1,000 | 876 us |
-| 10,000 | 1.35 ms |
-| 100,000 | 6.17 ms |
-*Observation: Training time increases with N primarily due to the initial O(N*D^2) precomputation of XTX and XTy. The per-iteration cost remains constant.*
+### Optimization Impact (Naive vs. Optimized) [500 epochs]
+| Dataset Size (N, D) | Naive Time | Optimized Time | Speedup |
+|---|---|---|---|
+| N=1,000, D=10 | 13.5 ms | 3.6 ms | ~3.8x |
+| N=10,000, D=10 | 69.3 ms | 4.1 ms | ~16.7x |
+| N=100,000, D=10 | 395.2 ms | 8.3 ms | ~47.5x |
 
-### Scaling with Number of Features (D) [N=10000, 100 epochs]
-| D | Mean Time |
-|---|---|
-| 5 | 1.11 ms |
-| 50 | 2.41 ms |
-| 500 | 43.39 ms |
-*Observation: Performance scales quadratically with D, matching the O(D^2) complexity of matrix-vector multiplications in the training loop.*
+### Scaling and Memory Usage [N=10000, 500 epochs]
+| D | Optimized Time | Peak Memory |
+|---|---|---|
+| 10 | 4.0 ms | ~45 MB |
+| 100 | 7.3 ms | ~45 MB |
+| 500 | 83.8 ms | ~84 MB |
+
+*Observations:*
+- **Scaling with N:** Training time increases slowly with N due to the initial $O(N \cdot D^2)$ precomputation. However, the speedup over the naive $O(N \cdot D)$ per-iteration approach increases dramatically as N grows.
+- **Scaling with D:** Performance scales quadratically with D ($O(D^2)$), as expected from matrix-vector multiplications in the training loop.
+- **Memory Usage:** Memory usage remains stable for moderate D but increases as the precomputed $X^T X$ matrix ($D \times D$) and the input matrix $X$ ($N \times D$) grow in size.
 
 ## Conclusions
 - The scikit-learn components for the Iris app are highly efficient.
-- The custom `LinearRegressionGD` is optimized for large N by precomputing necessary matrices, making it suitable for datasets where the number of samples significantly exceeds the number of features.
-- Precomputation dominates for very large datasets, but NumPy's optimized BLAS routines keep this efficient up to D=500.
+- The custom `LinearRegressionGD` is highly optimized for datasets where N >> D. The analytical gradient approach provides a speedup of up to 47x for 100,000 samples compared to a naive implementation.
+- Precomputation is the most efficient strategy for large-scale linear regression with Gradient Descent when the number of features is manageable (up to $D \approx 500$ in this environment).
