@@ -36,6 +36,16 @@ The implementation uses analytical gradients to reduce per-iteration complexity 
 | 500 | 43.39 ms |
 *Observation: Performance scales quadratically with D, matching the O(D^2) complexity of matrix-vector multiplications in the training loop.*
 
+### Optimized vs Naive Comparison (N=10000, D=10, 1000 epochs)
+- **Optimized GD**: ~7.8 ms
+- **Naive GD**: ~144 ms
+- **Speedup**: ~18x
+*Observation: The analytical gradient optimization provides a significant speedup by avoiding expensive full matrix-vector multiplications in each iteration.*
+
+### Memory Usage Analysis (N=10000, D=500)
+- **Peak Memory (RSS)**: ~78 MB
+*Observation: Memory usage remains stable even for relatively high-dimensional datasets. The precomputed XTX matrix for D=500 is only 500x500 (~2 MB), so the primary memory consumption is the original dataset X.*
+
 ## Conclusions
 - The scikit-learn components for the Iris app are highly efficient.
 - The custom `LinearRegressionGD` is optimized for large N by precomputing necessary matrices, making it suitable for datasets where the number of samples significantly exceeds the number of features.
