@@ -20,6 +20,15 @@ The implementation uses analytical gradients to reduce per-iteration complexity 
 - **Training (fit)**: ~7.4 ms
 - **Prediction**: ~97 us
 
+### Optimized vs. Naive Comparison (N=10000, D=10, 1000 epochs)
+- **Naive GD**: ~154.5 ms
+- **Optimized GD**: ~7.8 ms
+- **Speedup**: ~19.8x
+
+### Memory Usage (High-Dimensional: N=10000, D=500)
+- **Peak Memory**: ~78.3 MB
+*Note: Memory usage is primarily driven by the precomputed O(D^2) XTX matrix.*
+
 ### Scaling with Number of Samples (N) [D=10, 100 epochs]
 | N | Mean Time |
 |---|---|
