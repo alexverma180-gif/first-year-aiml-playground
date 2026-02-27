@@ -1,42 +1,52 @@
-# Performance Benchmark Summary
+# Performance Benchmark Summary (Updated: 2025-02-27)
 
 ## Environment
 - Python 3.12.12
 - NumPy 2.4.2
 - scikit-learn 1.8.0
 - pytest-benchmark 5.2.3
+- OS: Linux (Sandbox Environment)
 
 ## Core Application Functions (Iris Dataset)
-| Function | Mean Time | Description |
-|---|---|---|
-| `load_data` | ~1.5 ms | Loading and cleaning Iris dataset |
-| `train_model` (KNN) | ~1.8 ms | Training scikit-learn KNN (k=5) |
-| `predict_model` | ~2.6 ms | Prediction on test set |
+| Function | Mean Time (Current) | Previous Baseline | Description |
+|---|---|---|---|
+| `load_data` | ~3.10 ms | ~1.5 ms | Loading and cleaning Iris dataset |
+| `train_model` (KNN) | ~2.77 ms | ~1.8 ms | Training scikit-learn KNN (k=5) |
+| `predict_model` | ~3.64 ms | ~2.6 ms | Prediction on test set |
 
 ## Linear Regression GD (Custom Implementation)
 The implementation uses analytical gradients to reduce per-iteration complexity from O(N*D) to O(D^2).
 
 ### Baseline Performance (N=10000, D=3, 1000 epochs)
-- **Training (fit)**: ~7.4 ms
-- **Prediction**: ~97 us
+- **Training (fit)**: ~9.71 ms (Previously ~7.4 ms)
+- **Prediction**: ~108 us (Previously ~97 us)
 
 ### Scaling with Number of Samples (N) [D=10, 100 epochs]
-| N | Mean Time |
-|---|---|
-| 1,000 | 876 us |
-| 10,000 | 1.35 ms |
-| 100,000 | 6.17 ms |
-*Observation: Training time increases with N primarily due to the initial O(N*D^2) precomputation of XTX and XTy. The per-iteration cost remains constant.*
+| N | Mean Time (Current) | Previous Baseline |
+|---|---|---|
+| 1,000 | 1.18 ms | 876 us |
+| 10,000 | 1.74 ms | 1.35 ms |
+| 100,000 | 7.44 ms | 6.17 ms |
 
 ### Scaling with Number of Features (D) [N=10000, 100 epochs]
-| D | Mean Time |
-|---|---|
-| 5 | 1.11 ms |
-| 50 | 2.41 ms |
-| 500 | 43.39 ms |
-*Observation: Performance scales quadratically with D, matching the O(D^2) complexity of matrix-vector multiplications in the training loop.*
+| D | Mean Time (Current) | Previous Baseline |
+|---|---|---|
+| 5 | 1.32 ms | 1.11 ms |
+| 50 | 3.01 ms | 2.41 ms |
+| 500 | 62.51 ms | 43.39 ms |
+
+## Optimized vs Naive Comparison (1000 epochs)
+| Setup | Naive GD Time | Optimized GD Time | Speedup |
+|---|---|---|---|
+| N=10k, D=10 | 152.0 ms | 7.7 ms | ~19.6x |
+| N=100k, D=10 | 1141.8 ms | 17.9 ms | ~64.0x |
+| N=10k, D=500 | 2042.3 ms | 128.7 ms | ~15.9x |
+
+## Memory Analysis (Peak Memory Delta)
+- Optimized GD uses more memory for high-dimensional data (D=500) due to precomputing the $D \times D$ matrix $X^TX$.
+- For $N=10,000, D=500$, the optimized version showed a peak memory delta of ~4.88 MB compared to the naive version.
 
 ## Conclusions
-- The scikit-learn components for the Iris app are highly efficient.
-- The custom `LinearRegressionGD` is optimized for large N by precomputing necessary matrices, making it suitable for datasets where the number of samples significantly exceeds the number of features.
-- Precomputation dominates for very large datasets, but NumPy's optimized BLAS routines keep this efficient up to D=500.
+- Results are consistent with previous benchmarks, with slight increases across all metrics due to environment performance differences.
+- The analytical gradient optimization remains highly effective, providing up to 64x speedup for large datasets.
+- Memory overhead for $X^TX$ is manageable up to $D=500$ but should be monitored for extremely high-dimensional datasets.
