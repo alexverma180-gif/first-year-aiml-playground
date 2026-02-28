@@ -2,11 +2,17 @@ import numpy as np
 import time
 import sys
 import os
-import resource
-from scratch_ml.linear_regression import LinearRegressionGD
+try:
+    import resource
+except ImportError:
+    resource = None
 
 # Add project root to sys.path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
+
+from scratch_ml.linear_regression import LinearRegressionGD
 
 class NaiveLinearRegressionGD:
     def __init__(self, lr=0.01, epochs=1000):
@@ -36,7 +42,9 @@ class NaiveLinearRegressionGD:
 
 def get_peak_memory():
     # Returns peak memory in MB
-    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+    if resource:
+        return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+    return 0.0
 
 def benchmark_models(n, d, epochs=100):
     rng = np.random.default_rng(42)
