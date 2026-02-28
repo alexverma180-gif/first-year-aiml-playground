@@ -6,7 +6,9 @@ import os
 from pathlib import Path
 
 # Add the project root to sys.path
-sys.path.append(os.path.abspath("first-year-aiml-playground"))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
 
 from app.model_utils import load_data, train_model
 

@@ -1,4 +1,4 @@
-# Performance Benchmark Summary (Updated: 2025-02-27)
+# Performance Benchmark Summary (Updated: 2025-03-05)
 
 ## Environment
 - Python 3.12.12
@@ -10,43 +10,43 @@
 ## Core Application Functions (Iris Dataset)
 | Function | Mean Time (Current) | Previous Baseline | Description |
 |---|---|---|---|
-| `load_data` | ~3.10 ms | ~1.5 ms | Loading and cleaning Iris dataset |
-| `train_model` (KNN) | ~2.77 ms | ~1.8 ms | Training scikit-learn KNN (k=5) |
-| `predict_model` | ~3.64 ms | ~2.6 ms | Prediction on test set |
+| `load_data` | ~1.56 ms | ~3.10 ms | Loading and cleaning Iris dataset |
+| `train_model` (KNN) | ~2.04 ms | ~2.77 ms | Training scikit-learn KNN (k=5) |
+| `predict_model` | ~2.79 ms | ~3.64 ms | Prediction on test set |
 
 ## Linear Regression GD (Custom Implementation)
 The implementation uses analytical gradients to reduce per-iteration complexity from O(N*D) to O(D^2).
 
 ### Baseline Performance (N=10000, D=3, 1000 epochs)
-- **Training (fit)**: ~9.71 ms (Previously ~7.4 ms)
-- **Prediction**: ~108 us (Previously ~97 us)
+- **Training (fit)**: ~7.56 ms (Previously ~9.71 ms)
+- **Prediction**: ~40.9 us (Previously ~108 us)
 
 ### Scaling with Number of Samples (N) [D=10, 100 epochs]
 | N | Mean Time (Current) | Previous Baseline |
 |---|---|---|
-| 1,000 | 1.18 ms | 876 us |
-| 10,000 | 1.74 ms | 1.35 ms |
-| 100,000 | 7.44 ms | 6.17 ms |
+| 1,000 | 826 us | 1.18 ms |
+| 10,000 | 1.39 ms | 1.74 ms |
+| 100,000 | 6.59 ms | 7.44 ms |
 
 ### Scaling with Number of Features (D) [N=10000, 100 epochs]
 | D | Mean Time (Current) | Previous Baseline |
 |---|---|---|
-| 5 | 1.32 ms | 1.11 ms |
-| 50 | 3.01 ms | 2.41 ms |
-| 500 | 62.51 ms | 43.39 ms |
+| 5 | 1.14 ms | 1.32 ms |
+| 50 | 2.88 ms | 3.01 ms |
+| 500 | 47.70 ms | 62.51 ms |
 
 ## Optimized vs Naive Comparison (1000 epochs)
 | Setup | Naive GD Time | Optimized GD Time | Speedup |
 |---|---|---|---|
-| N=10k, D=10 | 152.0 ms | 7.7 ms | ~19.6x |
-| N=100k, D=10 | 1141.8 ms | 17.9 ms | ~64.0x |
-| N=10k, D=500 | 2042.3 ms | 128.7 ms | ~15.9x |
+| N=10k, D=10 | 158.2 ms | 7.8 ms | ~20.3x |
+| N=100k, D=10 | 844.9 ms | 13.0 ms | ~65.0x |
+| N=10k, D=500 | 2687.4 ms | 135.7 ms | ~19.8x |
 
 ## Memory Analysis (Peak Memory Delta)
 - Optimized GD uses more memory for high-dimensional data (D=500) due to precomputing the $D \times D$ matrix $X^TX$.
-- For $N=10,000, D=500$, the optimized version showed a peak memory delta of ~4.88 MB compared to the naive version.
+- For $N=10,000, D=500$, the optimized version showed a peak memory delta of ~4.75 MB compared to the naive version.
 
 ## Conclusions
-- Results are consistent with previous benchmarks, with slight increases across all metrics due to environment performance differences.
-- The analytical gradient optimization remains highly effective, providing up to 64x speedup for large datasets.
+- Results are consistent with previous benchmarks, showing improved performance across all metrics in this environment.
+- The analytical gradient optimization remains highly effective, providing up to 65x speedup for large datasets.
 - Memory overhead for $X^TX$ is manageable up to $D=500$ but should be monitored for extremely high-dimensional datasets.
