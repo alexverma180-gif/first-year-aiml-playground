@@ -1,4 +1,4 @@
-import { CheckCircle, Circle } from 'lucide-react';
+import { CircleCheck as CheckCircle, Circle } from 'lucide-react';
 
 interface LessonCardProps {
   title: string;

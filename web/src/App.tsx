@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, TrendingUp, Flower, Database, Home } from 'lucide-react';
+import { BookOpen, TrendingUp, Flower, Database, Hop as Home } from 'lucide-react';
 import { LinearRegressionVisualizer } from './components/LinearRegressionVisualizer';
 import { IrisClassifier } from './components/IrisClassifier';
 import { DataCleaningTutorial } from './components/DataCleaningTutorial';
