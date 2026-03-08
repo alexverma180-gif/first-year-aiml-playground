@@ -4,3 +4,4 @@ __pycache__/
 baseline.json
 optimized.json
 .benchmarks/
+.env
