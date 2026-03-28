@@ -5,12 +5,18 @@ from app.model_utils import load_data, train_model
 from scratch_ml.linear_regression import LinearRegressionGD
 
 @pytest.fixture(scope="module")
-def app_data():
-    """Fixture to load data once for all performance tests."""
-    # Use the __wrapped__ attribute to bypass the Streamlit caching decorator
+def raw_app_data():
+    """Fixture to load raw data once for all performance tests."""
     df = load_data.__wrapped__()
     X = df.drop("species", axis=1)
     y = df["species"]
+    return X, y
+
+
+@pytest.fixture(scope="module")
+def app_data(raw_app_data):
+    """Fixture to load and split data once for all performance tests."""
+    X, y = raw_app_data
     return train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
 def test_load_data_performance(benchmark):
@@ -66,3 +72,9 @@ def test_predict_model_performance(benchmark, trained_model, app_data):
     """Benchmark the predict method of the trained model."""
     _, X_test, _, _ = app_data
     benchmark.pedantic(trained_model.predict, args=(X_test,), rounds=10)
+
+
+def test_train_test_split_performance(benchmark, raw_app_data):
+    """Benchmark the train_test_split function."""
+    X, y = raw_app_data
+    benchmark.pedantic(train_test_split, args=(X, y), kwargs={"test_size": 0.2, "random_state": 42, "stratify": y}, rounds=10)
