@@ -40,6 +40,32 @@ def test_linear_regression_performance(benchmark, linear_regression_data):
     benchmark.pedantic(model.fit, args=(X, y), rounds=10)
 
 
+def test_linear_regression_naive_performance(benchmark, linear_regression_data):
+    """Benchmark a naive implementation of Linear Regression GD (no precomputation)."""
+    X, y = linear_regression_data
+    lr = 0.01
+    epochs = 1000
+
+    def naive_fit(X, y, lr, epochs):
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
+        n, d = X.shape
+        w = np.zeros(d)
+        b = 0.0
+        two_over_n = 2.0 / n
+        learning_rate_factor = lr * two_over_n
+        for _ in range(epochs):
+            # Naive gradient calculation: O(N*D) per epoch
+            error = (X @ w + b) - y
+            grad_w = X.T @ error
+            grad_b = np.sum(error)
+            w -= learning_rate_factor * grad_w
+            b -= learning_rate_factor * grad_b
+        return w, b
+
+    benchmark.pedantic(naive_fit, args=(X, y, lr, epochs), rounds=10)
+
+
 @pytest.fixture(scope="module")
 def trained_linear_regression_model(linear_regression_data):
     """Fixture to train a LinearRegressionGD model once for all prediction tests."""
