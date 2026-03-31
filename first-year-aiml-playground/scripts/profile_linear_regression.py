@@ -3,10 +3,11 @@ import time
 import sys
 import os
 import resource
-from scratch_ml.linear_regression import LinearRegressionGD
 
 # Add project root to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from scratch_ml.linear_regression import LinearRegressionGD
 
 class NaiveLinearRegressionGD:
     def __init__(self, lr=0.01, epochs=1000):
